@@ -733,7 +733,21 @@ function sanitizeResponse(text) {
 }
 
 function sanitizeToolResidual(text) {
-  const cleaned = sanitizeResponse(text || '');
+  if (!text) return '';
+
+  // Strip any block starting with Cursor identity/scope-restriction markers
+  // These appear as trailing paragraphs after the actual content
+  let cleaned = text
+    .replace(/\n*>?\s*\*\*Note:\*\*[\s\S]*/i, '')
+    .replace(/\n*>?\s*Note:[\s\S]*/i, '')
+    .replace(/\n+[^\n]*(?:I am|I'm)\s+(?:Claude|an AI)[^\n]*Anthropic[^\n]*/gi, '')
+    .replace(/\n+[^\n]*related to[^\n]*Cursor[^\n]*/gi, '')
+    .replace(/\n+[^\n]*outside\s+(?:the\s+)?scope[^\n]*/gi, '')
+    .replace(/\n+[^\n]*If\s+you(?:'re| are)[^\n]*Cursor[^\n]*/gi, '')
+    .replace(/\n+---\s*$/gm, '')
+    .trim();
+
+  cleaned = sanitizeResponse(cleaned);
   if (!cleaned) return '';
   if (isRefusal(cleaned)) return '';
   return cleaned;
