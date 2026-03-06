@@ -16,16 +16,17 @@
 
 ## 当前实现特性
 
-- ✅ 流式 / 非流式 都支持
+- ✅ 流式 / 非流式 都支持（Anthropic + OpenAI）
 - ✅ CORS 支持
 - ✅ 直接请求 `https://cursor.com/api/chat` 并解析 SSE `text-delta`
+- ✅ 拒绝检测 + 自动重试（无工具模式）
+- ✅ 响应清洗（Cursor 身份/拒绝措辞替换）
+- ✅ tool_call 解析（```json action``` → Anthropic `tool_use` / OpenAI `tool_calls`）
 - ✅ 纯 Worker runtime（无 Node fs/process 依赖）
 
 ## 当前限制（相对主项目）
 
-- ❌ 未移植原项目的拒绝检测/自动重试清洗策略
 - ❌ 未移植 vision / OCR 模块
-- ❌ 未完整移植 tool_call 解析闭环（当前走文本直通）
 - ❌ 未移植 yaml/config 文件系统加载（改为 Worker vars）
 
 ## 部署
