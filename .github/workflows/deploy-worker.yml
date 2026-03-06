@@ -22,3 +22,7 @@ jobs:
           apiToken: ${{ secrets.CF_API_TOKEN }}
           accountId: ${{ secrets.CF_ACCOUNT_ID }}
           workingDirectory: worker
+          secrets: |
+            API_KEY
+        env:
+          API_KEY: ${{ secrets.API_KEY }}

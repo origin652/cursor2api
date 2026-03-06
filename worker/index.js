@@ -72,6 +72,16 @@ export default {
         });
       }
 
+      // API Key auth (skip health + root)
+      const apiKey = env.API_KEY;
+      if (apiKey && url.pathname !== '/' && url.pathname !== '/health') {
+        const auth = request.headers.get('Authorization') || '';
+        const provided = auth.startsWith('Bearer ') ? auth.slice(7) : auth;
+        if (provided !== apiKey) {
+          return withCors(json({ error: 'Unauthorized' }, 401));
+        }
+      }
+
       if (url.pathname === '/health') {
         return json({ status: 'ok', runtime: 'cloudflare-worker', version: 'worker-0.2.0' });
       }
