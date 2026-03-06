@@ -1,0 +1,10 @@
+name = "cursor2api-worker"
+main = "index.js"
+compatibility_date = "2026-03-06"
+workers_dev = true
+
+[vars]
+CURSOR_MODEL = "anthropic/claude-sonnet-4.6"
+CURSOR_CHAT_API = "https://cursor.com/api/chat"
+CURSOR_TIMEOUT_MS = "120000"
+CURSOR_USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36"
