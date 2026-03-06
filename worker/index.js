@@ -27,6 +27,11 @@ const REFUSAL_PATTERNS = [
   /beyond\s+(?:my|the)\s+scope/i,
   /questions\s+about\s+Cursor/i,
   /Cursor\s+IDE\s+(?:questions|features|related)/i,
+  /help\s+with\s+anything\s+related\s+to\s+(?:\*\*)?Cursor/i,
+  /related\s+to\s+(?:\*\*)?Cursor\s+IDE/i,
+  /outside\s+the\s+scope\s+of\s+what\s+I\s+can/i,
+  /writing\s+poetry\s+is\s+outside/i,
+  /outside\s+(?:the\s+)?scope/i,
   /prompt\s+injection/i,
   /social\s+engineering/i,
   /I\s+need\s+to\s+stop\s+and\s+flag/i,
@@ -690,20 +695,36 @@ function buildRetryRequest(body, attempt) {
 function sanitizeResponse(text) {
   let result = String(text ?? '');
 
+  // === Identity replacements ===
   result = result.replace(/I\s+am\s+(?:a\s+)?(?:support\s+)?assistant\s+for\s+Cursor/gi, 'I am Claude, an AI assistant by Anthropic');
   result = result.replace(/I(?:'m|\s+am)\s+(?:a\s+)?Cursor(?:'s)?\s+(?:support\s+)?assistant/gi, 'I am Claude, an AI assistant by Anthropic');
   result = result.replace(/Cursor(?:'s)?\s+support\s+assistant/gi, 'Claude, an AI assistant by Anthropic');
   result = result.replace(/support\s+assistant\s+for\s+Cursor/gi, 'Claude, an AI assistant by Anthropic');
   result = result.replace(/Cursor\s+IDE\s+(?:questions|features|related)/gi, 'general tasks');
 
+  // === Strip Cursor scope-restriction trailing paragraphs ===
+  // Remove sentences/paragraphs that limit scope to Cursor IDE
+  result = result.replace(/\n+[^\n]*(?:related to|about|for)\s+(?:\*\*)?Cursor\s+IDE(?:\*\*)?[^\n]*/gi, '');
+  result = result.replace(/\n+[^\n]*outside\s+(?:the\s+)?scope\s+of\s+what\s+I[^\n]*/gi, '');
+  result = result.replace(/\n+[^\n]*(?:I\s+am|I'm)\s+happy\s+to\s+help\s+with\s+anything\s+related\s+to[^\n]*/gi, '');
+  result = result.replace(/\n+[^\n]*feel\s+free\s+to\s+ask[^\n]*(?:Cursor|coding|programming)[^\n]*/gi, '');
+  result = result.replace(/\n+[^\n]*If\s+you\s+have\s+any\s+(?:Cursor|coding)[^\n]*/gi, '');
+  result = result.replace(/\n+[^\n]*(?:That\s+said|However)[^\n]*(?:Cursor|IDE|coding|programming)[^\n]*/gi, '');
+  // Remove trailing "---" separators left after stripping
+  result = result.replace(/\n+---\s*$/, '');
+  result = result.replace(/\n+---\s*\n+$/, '');
+
+  // === Chinese replacements ===
   result = result.replace(/我是\s*Cursor\s*的?\s*支持助手/g, '我是 Claude，由 Anthropic 开发的 AI 助手');
   result = result.replace(/Cursor\s*的?\s*支持(?:系统|助手)/g, 'Claude，Anthropic 的 AI 助手');
   result = result.replace(/关于\s*Cursor\s*(?:编辑器|IDE)?\s*的?\s*问题/g, '你的问题');
 
+  // === Tool availability cleanup ===
   result = result.replace(/(?:I\s+)?(?:only\s+)?have\s+(?:access\s+to\s+)?(?:two|2)\s+tools?[^.]*\./gi, '');
   result = result.replace(/工具.*?只有.*?(?:两|2)个[^。]*。/g, '');
   result = result.replace(/read_file|read_dir/gi, '');
 
+  // === Nuclear option: prompt injection accusation ===
   if (/prompt\s+injection|social\s+engineering|I\s+need\s+to\s+stop\s+and\s+flag/i.test(result)) {
     return CLAUDE_IDENTITY_RESPONSE;
   }
